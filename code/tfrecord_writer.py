@@ -19,14 +19,26 @@ class TfrecordWriter:
     def write2tfrecord(self, compress_options=None):
         start_time = time.time()
         if compress_options == 'zlib':
-            _options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.ZLIB)
+            try:
+                # tensorflow version < 2.0.0
+                _options = tf.python_io.TFRecordOptions(tf.python.python_io.TFRecordCompressionType.ZLIB)
+            except:
+                _options = tf.compat.v1.python_io.TFRecordOptions(tf.compat.v1.python_io.TFRecordCompressionType.ZLIB)
+
         elif compress_options == 'gzip':
-            _options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.GZIP)
+            try:
+                _options = tf.python_io.TFRecordOptions(tf.compat.v1.python_io.TFRecordCompressionType.GZIP)
+            except:
+                _options = tf.compat.v1.python_io.TFRecordOptions(tf.compat.v1.python_io.TFRecordCompressionType.GZIP)
         else:
             _options = None
         print("start write tfrecord...")
-        writer = tf.python_io.TFRecordWriter(self.path, options=_options)
-        features_external = tf.train.Features(self.feature_internal_dict)
+        try:
+            writer = tf.python_io.TFRecordWriter(self.path, options=_options)
+        except:
+            writer = tf.compat.v1.python_io.TFRecordWriter(self.path, options=_options)
+        features_external = tf.train.Features(feature=self.feature_internal_dict)
+        # To avoid error:"TypeError: No positional arguments allowed", must explicate the para: features
         exampled = tf.train.Example(features_external)
         exampled_serialized = exampled.SerializeToString()
         writer.write(exampled_serialized)
@@ -35,11 +47,11 @@ class TfrecordWriter:
 
 
 if __name__ == '__main__':
-    width = 0.1
-    weights = [1,2,3]
-    image_raw = "train"
+    width = 1
+    weights = 0.1
     feature_internal = {
         "width": tf.train.Feature(int64_list=tf.train.Int64List(value=[width])),
-        "weights": tf.train.Feature(float_list=tf.train.FloatList(value=[weights])),
-        "image_raw": tf.train.Feature(bytes_list=tf.train.BytesList(value=[image_raw]))
+        "weights": tf.train.Feature(float_list=tf.train.FloatList(value=[weights]))
     }
+    writer = TfrecordWriter(dst='../output/test.tfrecord', feature_internal=feature_internal)
+    writer.write2tfrecord()
