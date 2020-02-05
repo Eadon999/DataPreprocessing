@@ -38,8 +38,8 @@ class TfrecordWriter:
         except:
             writer = tf.compat.v1.python_io.TFRecordWriter(self.path, options=_options)
         features_external = tf.train.Features(feature=self.feature_internal_dict)
-        # To avoid error:"TypeError: No positional arguments allowed", must explicate the para: features
-        exampled = tf.train.Example(features_external)
+        # To avoid error:'TypeError: No positional arguments allowed',tf.train.Example must explicate the para: features
+        exampled = tf.train.Example(features=features_external)
         exampled_serialized = exampled.SerializeToString()
         writer.write(exampled_serialized)
         writer.close()
@@ -49,8 +49,10 @@ class TfrecordWriter:
 if __name__ == '__main__':
     width = 1
     weights = 0.1
+    values = "0.1 0.2 0.1 0.3".encode('utf-8')
     feature_internal = {
         "width": tf.train.Feature(int64_list=tf.train.Int64List(value=[width])),
+        "values": tf.train.Feature(bytes_list=tf.train.BytesList(value=[values])),
         "weights": tf.train.Feature(float_list=tf.train.FloatList(value=[weights]))
     }
     writer = TfrecordWriter(dst='../output/test.tfrecord', feature_internal=feature_internal)
