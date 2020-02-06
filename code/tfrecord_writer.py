@@ -1,5 +1,6 @@
 import time
 import tensorflow as tf
+from code.data_preprocessing import TFDataProcesser
 
 
 class TfrecordWriter:
@@ -57,3 +58,9 @@ if __name__ == '__main__':
     }
     writer = TfrecordWriter(dst='../output/test.tfrecord', feature_internal=feature_internal)
     writer.write2tfrecord()
+    data_processer = TFDataProcesser(1, 222)
+    feature_description = {
+        'width' : tf.io.FixedLenFeature([], tf.int64),
+        'weights' : tf.io.FixedLenFeature([], tf.int64)
+    }
+    data_processer.tfrecord2tf_data_set("../output/test.tfrecord", feature_description)
